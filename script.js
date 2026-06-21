@@ -109,3 +109,36 @@ function loadCode() {
   const el = document.getElementById("code");
   if (el) el.value = localStorage.getItem("project_code") || "";
 }
+
+
+// =========================
+// SNIPPETS + PROJECTS FIX
+// =========================
+const snippets = {
+  python: [
+    {name: "Hello World", code: "print('Hello World')"},
+    {name: "Factorial", code: "n=5\nf=1\nfor i in range(1,n+1): f*=i\nprint(f)"}
+  ],
+  javascript: [
+    {name: "Hello JS", code: "console.log('Hello World')"},
+  ],
+  cpp: [
+    {name: "Hello C++", code: "#include<iostream>\nusing namespace std;\nint main(){cout<<'Hello';}"}
+  ]
+};
+
+function loadSnippets() {
+  const lang = document.getElementById("lang")?.value || "python";
+  const list = document.getElementById("snippets");
+  if (!list) return;
+  list.innerHTML = "";
+
+  (snippets[lang] || []).forEach(s => {
+    let btn = document.createElement("button");
+    btn.innerText = s.name;
+    btn.onclick = () => {
+      document.getElementById("code").value = s.code;
+    };
+    list.appendChild(btn);
+  });
+}
