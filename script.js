@@ -235,7 +235,7 @@ runBtn.addEventListener('click', async () => {
       throw new Error(`Language "${activeItem.lang}" not supported`);
     }
 
-    const response = await fetch('https://api.piston.rocks/execute', {
+    const response = await fetch('https://emkc.org/api/v2/execute', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
