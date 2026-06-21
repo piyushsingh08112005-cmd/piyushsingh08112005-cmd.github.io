@@ -4,10 +4,10 @@
    copy/run actions, project filtering, contact form validation
 ============================================================ */
 
-const REPLIT_URLS = {
-  "C": "https://replit.com/@templates/c?lite=true",
-  "C++": "https://replit.com/@templates/cpp?lite=true",
-  "Python": "https://replit.com/@templates/python3?lite=true"
+const TRINKET_URLS = {
+  "C": "https://trinket.io/embed/c",
+  "C++": "https://trinket.io/embed/cpp",
+  "Python": "https://trinket.io/embed/python"
 };
 
 const PRISM_LANG_MAP = {
@@ -209,7 +209,7 @@ copyBtn.addEventListener('click', async () => {
 });
 
 /* ============================
-   RUN BUTTON LOGIC
+   RUN BUTTON LOGIC - TRINKET IFRAME
 ============================ */
 runBtn.addEventListener('click', () => {
   if (!activeItem) return;
@@ -220,10 +220,10 @@ runBtn.addEventListener('click', () => {
     return;
   }
 
-  // Otherwise -> load Replit iframe inline
-  const replitUrl = REPLIT_URLS[activeItem.lang];
-  if (replitUrl) {
-    runOutput.innerHTML = `<iframe src="${replitUrl}" title="Replit Runner" allow="clipboard-write"></iframe>`;
+  // Load Trinket iframe (CORS-friendly alternative to Replit)
+  const trinketUrl = TRINKET_URLS[activeItem.lang];
+  if (trinketUrl) {
+    runOutput.innerHTML = `<iframe src="${trinketUrl}" frameborder="0" marginwidth="0" marginheight="0" allowfullscreen title="Trinket Code Runner"></iframe>`;
     runOutput.classList.add('active');
     runOutput.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
   }
