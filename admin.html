@@ -590,12 +590,16 @@
 
             <h3 style="margin-top: 20px; margin-bottom: 15px; color: #333;">Quick Actions</h3>
             <div class="button-group">
+                <button class="btn btn-primary btn-small" id="publishBtn" onclick="publishToGitHub()" style="display:none;">🚀 Publish to Live Site</button>
                 <button class="btn btn-primary btn-small" onclick="exportJSON()">📥 Export JSON</button>
                 <button class="btn btn-secondary btn-small" onclick="document.getElementById('importFile').click()">📤 Import JSON</button>
                 <input type="file" id="importFile" accept=".json" style="display: none;" onchange="importJSON(event)">
                 <button class="btn btn-secondary btn-small" onclick="downloadTemplate()">📋 Download Template</button>
                 <button class="btn btn-danger btn-small" onclick="clearAll()">🗑️ Clear All</button>
             </div>
+            <p id="publishHint" style="display:none;margin-top:10px;font-size:0.85em;color:#888;">
+                ℹ️ Sign in with GitHub (not password mode) to publish changes directly to the live site.
+            </p>
         </div>
 
         <div class="main-grid">
@@ -638,9 +642,16 @@
                         <textarea id="code" placeholder="Paste your code here..." required></textarea>
                     </div>
 
+                    <div class="form-group" id="ipynbGroup" style="display:none;">
+                        <label for="ipynb">Notebook (.ipynb) path or full Colab URL</label>
+                        <input type="text" id="ipynb" placeholder="codes/Python/expert/ml_demo.ipynb  or  https://colab.research.google.com/...">
+                        <small style="display:block;margin-top:6px;color:#888;">A repo path (e.g. <code>codes/Python/expert/demo.ipynb</code>) auto-opens directly in Colab. A full URL is used as-is. Upload/manage notebooks in <a href="https://drive.google.com/drive/folders/1XSeTiWy2YNpcdTpsmmi9NyGGXFlAyVd9" target="_blank" rel="noopener">📁 this Drive folder</a> — open a notebook there, "Open with Colab", then paste its share link here.</small>
+                    </div>
+
                     <div class="form-group">
-                        <label for="colab">Colab Link (Python Expert only)</label>
-                        <input type="url" id="colab" placeholder="https://colab.research.google.com/drive/...">
+                        <label>🔗 Extra Links (optional)</label>
+                        <div id="linksList"></div>
+                        <button type="button" class="btn btn-secondary btn-small" onclick="addLinkField()">+ Add Link</button>
                     </div>
 
                     <button type="submit" class="btn btn-primary">✨ Add Code Snippet</button>
@@ -663,6 +674,12 @@
     let currentUser = null;
     const GITHUB_CLIENT_ID = 'Ov23liAU8YW2uRXXXXXX'; // Will be replaced
     const GITHUB_REDIRECT_URI = window.location.origin + window.location.pathname + '?auth=github';
+
+    // Repo this admin panel publishes to (must match script.js)
+    const REPO_OWNER = 'piyushsingh08112005-cmd';
+    const REPO_NAME = 'piyushsingh08112005-cmd.github.io';
+    const REPO_BRANCH = 'main';
+    const REPO_DATA_PATH = 'data/codes.json';
 
     // Check authentication on page load
     window.addEventListener('load', () => {
@@ -779,17 +796,25 @@
     function updateUserInfo() {
         const authMethod = localStorage.getItem('authMethod');
         const userInfo = document.getElementById('userInfo');
+        const publishBtn = document.getElementById('publishBtn');
+        const publishHint = document.getElementById('publishHint');
 
         if (isGuest()) {
             userInfo.textContent = '👀 Guest Mode (view only)';
+            publishBtn.style.display = 'none';
+            publishHint.style.display = 'none';
         } else if (authMethod === 'github') {
             const user = JSON.parse(localStorage.getItem('githubUser') || '{}');
             userInfo.innerHTML = `
                 <img src="${user.avatar_url}" class="user-avatar" alt="avatar">
                 <span>👤 ${user.name || user.login}</span>
             `;
+            publishBtn.style.display = 'inline-block';
+            publishHint.style.display = 'none';
         } else {
             userInfo.textContent = '🔐 Password Protected Mode';
+            publishBtn.style.display = 'none';
+            publishHint.style.display = 'block';
         }
     }
 
@@ -825,6 +850,37 @@
             const base = filename.split('.')[0];
             document.getElementById('filename').value = base + ext;
         }
+
+        document.getElementById('ipynbGroup').style.display = (lang === 'Python') ? 'block' : 'none';
+    }
+
+    /* ===== EXTRA LINKS CONTROL ===== */
+    function addLinkField(label, url) {
+        const container = document.getElementById('linksList');
+        const row = document.createElement('div');
+        row.className = 'link-row';
+        row.style.cssText = 'display:flex;gap:8px;margin-bottom:8px;';
+        row.innerHTML = `
+            <input type="text" class="link-label" placeholder="Label (e.g. Docs)" style="flex:1;padding:8px;border:2px solid #e0e0e0;border-radius:8px;" value="${label ? escapeHtml(label) : ''}">
+            <input type="url" class="link-url" placeholder="https://..." style="flex:2;padding:8px;border:2px solid #e0e0e0;border-radius:8px;" value="${url ? escapeHtml(url) : ''}">
+            <button type="button" class="btn btn-danger btn-small" onclick="this.parentElement.remove()">✕</button>
+        `;
+        container.appendChild(row);
+    }
+
+    function collectLinks() {
+        const rows = document.querySelectorAll('#linksList .link-row');
+        const links = [];
+        rows.forEach(row => {
+            const url = row.querySelector('.link-url').value.trim();
+            const label = row.querySelector('.link-label').value.trim();
+            if (url) links.push({ label: label || url, url });
+        });
+        return links;
+    }
+
+    function clearLinkFields() {
+        document.getElementById('linksList').innerHTML = '';
     }
 
     function addCode(e) {
@@ -839,9 +895,14 @@
             code: document.getElementById('code').value
         };
 
-        const colab = document.getElementById('colab').value;
-        if (colab && newCode.lang === 'Python' && newCode.level === 'expert') {
-            newCode.colab = colab;
+        const ipynb = document.getElementById('ipynb').value.trim();
+        if (ipynb && newCode.lang === 'Python') {
+            newCode.ipynb = ipynb;
+        }
+
+        const links = collectLinks();
+        if (links.length) {
+            newCode.links = links;
         }
 
         allCodes.push(newCode);
@@ -852,6 +913,8 @@
 
         // Reset form
         document.querySelector('form').reset();
+        clearLinkFields();
+        document.getElementById('ipynbGroup').style.display = 'none';
     }
 
     function renderCodeList() {
@@ -899,7 +962,11 @@
         document.getElementById('language').value = code.lang;
         document.getElementById('level').value = code.level;
         document.getElementById('code').value = code.code;
-        document.getElementById('colab').value = code.colab || '';
+        document.getElementById('ipynb').value = code.ipynb || '';
+        document.getElementById('ipynbGroup').style.display = (code.lang === 'Python') ? 'block' : 'none';
+
+        clearLinkFields();
+        (code.links || []).forEach(link => addLinkField(link.label, link.url));
 
         allCodes.splice(index, 1);
         saveToLocalStorage();
@@ -907,6 +974,70 @@
         updateStats();
         showMessage('✏️ Editing mode. Make changes and click "Add Code Snippet"', 'info');
         document.querySelector('form').scrollIntoView({ behavior: 'smooth' });
+    }
+
+    async function publishToGitHub() {
+        if (isGuest()) { showMessage('👀 Guests can\'t publish. Please log in.', 'error'); return; }
+
+        const token = localStorage.getItem('githubToken');
+        if (!token) {
+            showMessage('❌ Sign in with GitHub to publish directly to the live site.', 'error');
+            return;
+        }
+
+        if (!confirm(`Publish ${allCodes.length} code snippet(s) to the live site? This commits directly to ${REPO_OWNER}/${REPO_NAME} (${REPO_BRANCH}).`)) {
+            return;
+        }
+
+        const publishBtn = document.getElementById('publishBtn');
+        publishBtn.disabled = true;
+        publishBtn.textContent = '⏳ Publishing...';
+
+        const apiUrl = `https://api.github.com/repos/${REPO_OWNER}/${REPO_NAME}/contents/${REPO_DATA_PATH}`;
+        const headers = {
+            'Authorization': `token ${token}`,
+            'Accept': 'application/vnd.github.v3+json'
+        };
+
+        try {
+            // 1. Get current file SHA (required to update an existing file)
+            let sha = null;
+            const getRes = await fetch(`${apiUrl}?ref=${REPO_BRANCH}`, { headers });
+            if (getRes.ok) {
+                const fileData = await getRes.json();
+                sha = fileData.sha;
+            } else if (getRes.status !== 404) {
+                throw new Error(`Could not read current file (${getRes.status})`);
+            }
+
+            // 2. UTF-8 safe base64 encode of the JSON content
+            const jsonStr = JSON.stringify(allCodes, null, 2);
+            const base64Content = btoa(unescape(encodeURIComponent(jsonStr)));
+
+            // 3. Commit (create or update)
+            const putRes = await fetch(apiUrl, {
+                method: 'PUT',
+                headers: { ...headers, 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    message: `Update code snippets via admin panel (${new Date().toISOString()})`,
+                    content: base64Content,
+                    branch: REPO_BRANCH,
+                    ...(sha ? { sha } : {})
+                })
+            });
+
+            if (!putRes.ok) {
+                const err = await putRes.json().catch(() => ({}));
+                throw new Error(err.message || `GitHub API error (${putRes.status})`);
+            }
+
+            showMessage('✅ Published! Live site will update shortly (GitHub Pages may take a minute).', 'success');
+        } catch (err) {
+            showMessage('❌ Publish failed: ' + err.message, 'error');
+        } finally {
+            publishBtn.disabled = false;
+            publishBtn.textContent = '🚀 Publish to Live Site';
+        }
     }
 
     function exportJSON() {

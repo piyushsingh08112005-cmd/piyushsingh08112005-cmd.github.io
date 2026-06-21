@@ -588,6 +588,37 @@ ul {
   flex-wrap: wrap;
 }
 
+.extra-links {
+  padding: 0 26px 18px;
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.extra-links:empty {
+  display: none;
+}
+
+.extra-link-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 14px;
+  border-radius: 8px;
+  font-size: 0.85em;
+  font-weight: 600;
+  text-decoration: none;
+  background: rgba(255, 255, 255, 0.08);
+  border: 1px solid var(--glass-border);
+  color: inherit;
+  transition: all 0.25s;
+}
+
+.extra-link-btn:hover {
+  background: rgba(255, 255, 255, 0.16);
+  transform: translateY(-2px);
+}
+
 /* ============================
    PROJECTS
 ============================ */

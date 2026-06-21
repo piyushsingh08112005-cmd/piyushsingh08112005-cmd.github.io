@@ -5,10 +5,32 @@
 ============================================================ */
 
 const REPLIT_URLS = {
-  "C": "https://replit.com/@templates/c?lite=true",
-  "C++": "https://replit.com/@templates/cpp?lite=true",
-  "Python": "https://replit.com/@templates/python3?lite=true"
+  "C": "https://replit.com/languages/c",
+  "C++": "https://replit.com/languages/cpp",
+  "Python": "https://replit.com/languages/python3"
 };
+
+// GitHub repo this site is hosted from — used to build "Open in Colab" links
+// for .ipynb notebooks stored in the repo (e.g. codes/Python/expert/demo.ipynb)
+const REPO_OWNER = "piyushsingh08112005-cmd";
+const REPO_NAME = "piyushsingh08112005-cmd.github.io";
+const REPO_BRANCH = "main";
+
+/**
+ * Build a Colab URL for a notebook.
+ * - If `notebook` is already a full URL (http/https), it's used as-is.
+ * - Otherwise it's treated as a path inside this repo (e.g. "codes/Python/expert/ml_demo.ipynb")
+ *   and turned into a GitHub-loader Colab link that opens directly in Colab.
+ */
+function buildColabUrl(notebook) {
+  if (!notebook) return null;
+  if (/^https?:\/\//i.test(notebook)) return notebook;
+  const cleanPath = notebook.replace(/^\/+/, '');
+  return `https://colab.research.google.com/github/${REPO_OWNER}/${REPO_NAME}/blob/${REPO_BRANCH}/${cleanPath}`;
+}
+
+// Google Drive folder where Python .ipynb notebooks are stored/uploaded
+const NOTEBOOKS_DRIVE_FOLDER = "https://drive.google.com/drive/folders/1XSeTiWy2YNpcdTpsmmi9NyGGXFlAyVd9";
 
 const PRISM_LANG_MAP = {
   "C": "language-c",
@@ -110,8 +132,14 @@ document.querySelectorAll('.tab-btn').forEach(btn => {
     btn.classList.add('active');
     currentLang = btn.dataset.lang;
     renderCodeGrid();
+    toggleNotebooksDriveLink();
   });
 });
+
+function toggleNotebooksDriveLink() {
+  const link = document.getElementById('notebooksDriveLink');
+  if (link) link.style.display = (currentLang === 'Python') ? 'flex' : 'none';
+}
 
 /* ============================
    SUB-TAB SWITCHING (LEVEL)
@@ -136,6 +164,8 @@ const runBtn = document.getElementById('runBtn');
 const runOutput = document.getElementById('runOutput');
 const modalClose = document.getElementById('modalClose');
 
+const extraLinksEl = document.getElementById('extraLinks');
+
 let activeItem = null;
 
 function openModal(item) {
@@ -151,11 +181,29 @@ function openModal(item) {
   runOutput.innerHTML = '';
   runOutput.classList.remove('active');
 
-  // Update run button label based on colab availability
-  if (item.lang === 'Python' && item.colab) {
+  // Resolve a Colab link: prefer an .ipynb notebook path/URL, fall back to a plain colab link
+  const colabUrl = buildColabUrl(item.ipynb) || item.colab || null;
+
+  // Update run button label based on colab/notebook availability
+  if (item.lang === 'Python' && colabUrl) {
     runBtn.textContent = 'Open in Colab 🚀';
   } else {
     runBtn.textContent = '▶ Run on Replit ↗';
+  }
+
+  // Render any extra reference links attached to this snippet
+  extraLinksEl.innerHTML = '';
+  if (Array.isArray(item.links)) {
+    item.links.forEach(link => {
+      if (!link || !link.url) return;
+      const a = document.createElement('a');
+      a.href = link.url;
+      a.target = '_blank';
+      a.rel = 'noopener';
+      a.className = 'extra-link-btn';
+      a.textContent = `🔗 ${link.label || link.url}`;
+      extraLinksEl.appendChild(a);
+    });
   }
 
   codeModal.classList.add('active');
@@ -172,6 +220,7 @@ function closeModal() {
   document.body.style.overflow = '';
   runOutput.innerHTML = '';
   runOutput.classList.remove('active');
+  extraLinksEl.innerHTML = '';
   activeItem = null;
 }
 
@@ -214,9 +263,10 @@ copyBtn.addEventListener('click', async () => {
 runBtn.addEventListener('click', () => {
   if (!activeItem) return;
 
-  // Python with Colab link -> open in new tab
-  if (activeItem.lang === 'Python' && activeItem.colab) {
-    window.open(activeItem.colab, '_blank', 'noopener');
+  // Python with a notebook (.ipynb) or Colab link -> open directly in Colab, new tab
+  const colabUrl = buildColabUrl(activeItem.ipynb) || activeItem.colab;
+  if (activeItem.lang === 'Python' && colabUrl) {
+    window.open(colabUrl, '_blank', 'noopener');
     return;
   }
 
@@ -362,4 +412,5 @@ document.getElementById('year').textContent = new Date().getFullYear();
 document.addEventListener('DOMContentLoaded', () => {
   loadCodes();
   renderProjects();
+  toggleNotebooksDriveLink();
 });
