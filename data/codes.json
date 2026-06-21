@@ -1,30 +1,58 @@
 [
   {
-    "id": 1,
-    "title": "C Token",
-    "level": "C-Language",
-    "code": "token.c",
-    "description": "Basic of C language structure"
+    "title": "Hello World",
+    "filename": "hello.c",
+    "lang": "C",
+    "level": "basic",
+    "code": "#include <stdio.h>\n\nint main() {\n    printf(\"Hello, World!\\n\");\n    return 0;\n}"
   },
   {
-    "id": 2,
-    "title": "C Identifier",
-    "level": "C-Language",
-    "code": "identifier.c",
-    "description": "Rules for naming identifiers in C"
+    "title": "Sum of Two Numbers",
+    "filename": "sum.c",
+    "lang": "C",
+    "level": "basic",
+    "code": "#include <stdio.h>\n\nint main() {\n    int a = 5, b = 10;\n    int sum = a + b;\n    printf(\"Sum: %d\\n\", sum);\n    return 0;\n}"
   },
   {
-    "id": 3,
-    "title": "C Keywords",
-    "level": "C-Language",
-    "code": "keywords.c",
-    "description": "Reserved words in C language"
+    "title": "Factorial Program",
+    "filename": "factorial.c",
+    "lang": "C",
+    "level": "advanced",
+    "code": "#include <stdio.h>\n\nint factorial(int n) {\n    if (n <= 1) return 1;\n    return n * factorial(n - 1);\n}\n\nint main() {\n    printf(\"Factorial of 5: %d\\n\", factorial(5));\n    return 0;\n}"
   },
   {
-    "id": 4,
-    "title": "C Preprocessor",
-    "level": "C-Language",
-    "code": "preprocessor.c",
-    "description": "Directives like #include and #define"
+    "title": "Hello World",
+    "filename": "hello.cpp",
+    "lang": "C++",
+    "level": "basic",
+    "code": "#include <iostream>\nusing namespace std;\n\nint main() {\n    cout << \"Hello, World!\" << endl;\n    return 0;\n}"
+  },
+  {
+    "title": "Simple Class",
+    "filename": "class.cpp",
+    "lang": "C++",
+    "level": "advanced",
+    "code": "#include <iostream>\nusing namespace std;\n\nclass Student {\npublic:\n    string name;\n    int roll;\n    \n    void display() {\n        cout << \"Name: \" << name << \", Roll: \" << roll << endl;\n    }\n};\n\nint main() {\n    Student s;\n    s.name = \"Piyush\";\n    s.roll = 1;\n    s.display();\n    return 0;\n}"
+  },
+  {
+    "title": "Hello World",
+    "filename": "hello.py",
+    "lang": "Python",
+    "level": "basic",
+    "code": "print('Hello, World!')"
+  },
+  {
+    "title": "List Operations",
+    "filename": "lists.py",
+    "lang": "Python",
+    "level": "basic",
+    "code": "# Basic list operations\nnumbers = [1, 2, 3, 4, 5]\nprint('Original:', numbers)\nprint('Sum:', sum(numbers))\nprint('Average:', sum(numbers) / len(numbers))"
+  },
+  {
+    "title": "File I/O",
+    "filename": "file_io.py",
+    "lang": "Python",
+    "level": "advanced",
+    "code": "# Reading and writing files\nwith open('example.txt', 'w') as f:\n    f.write('Hello, File!')\n\nwith open('example.txt', 'r') as f:\n    content = f.read()\n    print(content)"
   }
 ]
