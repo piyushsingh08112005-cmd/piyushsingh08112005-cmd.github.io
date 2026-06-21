@@ -4,10 +4,10 @@
    copy/run actions, project filtering, contact form validation
 ============================================================ */
 
-const TRINKET_URLS = {
-  "C": "https://trinket.io/embed/c",
-  "C++": "https://trinket.io/embed/cpp",
-  "Python": "https://trinket.io/embed/python"
+const PISTON_LANG_MAP = {
+  "C": "c",
+  "C++": "cpp",
+  "Python": "python"
 };
 
 const PRISM_LANG_MAP = {
@@ -137,6 +137,7 @@ const runOutput = document.getElementById('runOutput');
 const modalClose = document.getElementById('modalClose');
 
 let activeItem = null;
+let isRunning = false;
 
 function openModal(item) {
   activeItem = item;
@@ -209,10 +210,10 @@ copyBtn.addEventListener('click', async () => {
 });
 
 /* ============================
-   RUN BUTTON LOGIC - TRINKET IFRAME
+   RUN BUTTON LOGIC - PISTON API
 ============================ */
-runBtn.addEventListener('click', () => {
-  if (!activeItem) return;
+runBtn.addEventListener('click', async () => {
+  if (!activeItem || isRunning) return;
 
   // Python with Colab link -> open in new tab
   if (activeItem.lang === 'Python' && activeItem.colab) {
@@ -220,12 +221,62 @@ runBtn.addEventListener('click', () => {
     return;
   }
 
-  // Load Trinket iframe (CORS-friendly alternative to Replit)
-  const trinketUrl = TRINKET_URLS[activeItem.lang];
-  if (trinketUrl) {
-    runOutput.innerHTML = `<iframe src="${trinketUrl}" frameborder="0" marginwidth="0" marginheight="0" allowfullscreen title="Trinket Code Runner"></iframe>`;
+  isRunning = true;
+  const originalText = runBtn.textContent;
+  runBtn.textContent = '⏳ Running...';
+  runBtn.disabled = true;
+
+  try {
+    const language = PISTON_LANG_MAP[activeItem.lang];
+    if (!language) {
+      throw new Error(`Language "${activeItem.lang}" not supported`);
+    }
+
+    const response = await fetch('https://api.piston.rocks/execute', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        language: language,
+        version: '*',
+        files: [
+          {
+            name: activeItem.filename,
+            content: activeItem.code
+          }
+        ]
+      })
+    });
+
+    if (!response.ok) {
+      throw new Error(`HTTP error! status: ${response.status}`);
+    }
+
+    const result = await response.json();
+    const output = result.run.output || result.run.stderr || '(No output)';
+    const runtime = result.run.stdout ? '✅ Success' : '⚠️ Output';
+
+    runOutput.innerHTML = `
+      <div class="output-container">
+        <div class="output-header">${runtime}</div>
+        <pre class="output-code">${escapeHtml(output)}</pre>
+      </div>
+    `;
     runOutput.classList.add('active');
     runOutput.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+
+  } catch (err) {
+    console.error('Execution error:', err);
+    runOutput.innerHTML = `
+      <div class="output-container">
+        <div class="output-header">❌ Error</div>
+        <pre class="output-code">${escapeHtml(err.message)}</pre>
+      </div>
+    `;
+    runOutput.classList.add('active');
+  } finally {
+    isRunning = false;
+    runBtn.textContent = originalText;
+    runBtn.disabled = false;
   }
 });
 
