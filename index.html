@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Piyush Singh | Developer Portfolio</title>
-<meta name="description" content="Piyush Singh - BCA Student, Aspiring Developer specializing in C, C++ and Python">
+<meta name="description" content="Piyush Singh - BCA Student, Aspiring Developer specialising in C, C++ and Python">
 
 <!-- Google Fonts -->
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -50,14 +50,14 @@
     <h2 class="hero-name">Piyush Singh</h2>
     <p class="hero-subtitle">BCA 2nd Semester Student | Aspiring Developer | Code Enthusiast</p>
     <p class="hero-summary">
-      I'm passionate about solving real-world problems through code, with a strong foundation in C and C++ for systems-level thinking.
-      I love exploring Python for its versatility in automation, data analysis, and machine learning.
-      Building efficient algorithms and clean architectures excites me every single day.
+      I'm passionate about solving real-world problems through code, with a strong foundation in C and C++ for
+      systems-level thinking. I love exploring Python for its versatility in automation, data analysis, and machine
+      learning. Building efficient algorithms and clean architectures excites me every single day.
       My goal is to keep learning, keep building, and grow into a well-rounded software engineer.
     </p>
     <div class="hero-buttons">
       <a href="#codes" class="btn btn-primary">View My Work</a>
-      <a href="#" class="btn btn-secondary" id="resumeBtn" download>Download Resume</a>
+      <a href="mailto:piyushsingh08112005@gmail.com" class="btn btn-secondary">Contact Me</a>
     </div>
   </div>
   <div class="scroll-indicator" aria-hidden="true">↓</div>
@@ -72,7 +72,7 @@
     <div class="glass-card lang-card">
       <div class="lang-icon">🔧</div>
       <h3>C</h3>
-      <p class="lang-tagline">Memory Management & Pointers</p>
+      <p class="lang-tagline">Memory Management &amp; Pointers</p>
       <ul class="lang-list">
         <li>Pointer Arithmetic</li>
         <li>Manual Memory Allocation</li>
@@ -84,7 +84,7 @@
     <div class="glass-card lang-card">
       <div class="lang-icon">⚡</div>
       <h3>C++</h3>
-      <p class="lang-tagline">OOP, STL & Speed</p>
+      <p class="lang-tagline">OOP, STL &amp; Speed</p>
       <ul class="lang-list">
         <li>Object-Oriented Programming</li>
         <li>Standard Template Library</li>
@@ -96,10 +96,10 @@
     <div class="glass-card lang-card">
       <div class="lang-icon">🐍</div>
       <h3>Python</h3>
-      <p class="lang-tagline">AI, NumPy, Pandas & ML</p>
+      <p class="lang-tagline">AI, NumPy, Pandas &amp; ML</p>
       <ul class="lang-list">
         <li>Machine Learning Basics</li>
-        <li>NumPy & Pandas</li>
+        <li>NumPy &amp; Pandas</li>
         <li>Data Visualization</li>
         <li>Automation Scripting</li>
       </ul>
@@ -113,20 +113,27 @@
   <p class="section-subtitle">Browse my code library by language and difficulty level</p>
 
   <!-- Language Tabs -->
-  <div class="tabs lang-tabs" role="tablist">
-    <button class="tab-btn active" data-lang="C">C</button>
-    <button class="tab-btn" data-lang="C++">C++</button>
-    <button class="tab-btn" data-lang="Python">Python</button>
+  <div class="tabs lang-tabs" role="tablist" aria-label="Language tabs">
+    <button class="tab-btn active" data-lang="C" role="tab" aria-selected="true">C</button>
+    <button class="tab-btn" data-lang="C++" role="tab" aria-selected="false">C++</button>
+    <button class="tab-btn" data-lang="Python" role="tab" aria-selected="false">Python</button>
   </div>
 
   <!-- Level Sub-Tabs -->
-  <div class="tabs level-tabs" role="tablist">
-    <button class="subtab-btn active" data-level="basic">Basic</button>
-    <button class="subtab-btn" data-level="advanced">Advanced</button>
-    <button class="subtab-btn" data-level="expert">Expert</button>
+  <div class="tabs level-tabs" role="tablist" aria-label="Difficulty tabs">
+    <button class="subtab-btn active" data-level="basic" role="tab" aria-selected="true">Basic</button>
+    <button class="subtab-btn" data-level="advanced" role="tab" aria-selected="false">Advanced</button>
+    <button class="subtab-btn" data-level="expert" role="tab" aria-selected="false">Expert</button>
   </div>
 
-  <a href="https://drive.google.com/drive/folders/1XSeTiWy2YNpcdTpsmmi9NyGGXFlAyVd9" target="_blank" rel="noopener" id="notebooksDriveLink" class="extra-link-btn" style="display:none;margin:0 auto 20px;width:fit-content;">📁 Browse Python Notebooks (Drive)</a>
+  <!-- Python Notebooks link (hidden by default, shown when Python tab active) -->
+  <a href="https://drive.google.com/drive/folders/1XSeTiWy2YNpcdTpsmmi9NyGGXFlAyVd9"
+     target="_blank" rel="noopener"
+     id="notebooksDriveLink"
+     class="extra-link-btn"
+     style="display:none; margin:0 auto 20px; width:fit-content;">
+    📁 Browse Python Notebooks (Drive)
+  </a>
 
   <div id="codeGrid" class="code-grid">
     <!-- Cards injected by JS -->
@@ -134,7 +141,7 @@
 </section>
 
 <!-- Code Modal -->
-<div id="codeModal" class="modal-overlay">
+<div id="codeModal" class="modal-overlay" role="dialog" aria-modal="true" aria-labelledby="modalTitle">
   <div class="modal glass-card">
     <div class="modal-header">
       <h3 id="modalTitle">Code Title</h3>
@@ -157,14 +164,43 @@
   <h2 class="section-title gradient-text">Projects</h2>
   <p class="section-subtitle">Things I've built while learning and experimenting</p>
 
-  <div class="filter-buttons">
+  <div class="filter-buttons" role="group" aria-label="Filter projects">
     <button class="filter-btn active" data-filter="All">All</button>
     <button class="filter-btn" data-filter="C++">C++</button>
     <button class="filter-btn" data-filter="Python">Python</button>
+    <button class="filter-btn" data-filter="C">C</button>
   </div>
 
   <div id="projectsGrid" class="projects-grid">
     <!-- Project cards injected by JS -->
+  </div>
+</section>
+
+<!-- Compiler Section -->
+<section id="compiler" class="section">
+  <h2 class="section-title gradient-text">Online Compiler</h2>
+  <p class="section-subtitle">Write and run C, C++ or Python code right here in the browser</p>
+
+  <div class="glass-card compiler-card">
+    <div class="compiler-toolbar">
+      <select id="compilerLang" class="compiler-select" aria-label="Select language">
+        <option value="C">C</option>
+        <option value="C++">C++</option>
+        <option value="Python">Python</option>
+      </select>
+      <button id="compilerRunBtn" class="btn btn-primary compiler-run-btn" onclick="runCompiler()">▶ Run</button>
+      <button class="btn btn-secondary compiler-clear-btn" onclick="clearCompiler()">🗑 Clear</button>
+    </div>
+    <textarea id="compilerCode" class="compiler-textarea" spellcheck="false"
+      placeholder="// Write your code here…
+#include &lt;stdio.h&gt;
+int main() {
+    printf(&quot;Hello from the compiler!&quot;);
+    return 0;
+}"></textarea>
+    <div id="compilerOutput" class="compiler-output">
+      <span style="color:var(--text-secondary);">Output will appear here after you click ▶ Run…</span>
+    </div>
   </div>
 </section>
 
@@ -176,24 +212,24 @@
   <form id="contactForm" class="glass-card contact-form" novalidate>
     <div class="form-group">
       <label for="name">Name</label>
-      <input type="text" id="name" name="name" placeholder="Your name" required>
-      <span class="error-msg" id="nameError"></span>
+      <input type="text" id="name" name="name" placeholder="Your name" required autocomplete="name">
+      <span class="error-msg" id="nameError" role="alert"></span>
     </div>
 
     <div class="form-group">
       <label for="email">Email</label>
-      <input type="email" id="email" name="email" placeholder="you@example.com" required>
-      <span class="error-msg" id="emailError"></span>
+      <input type="email" id="email" name="email" placeholder="you@example.com" required autocomplete="email">
+      <span class="error-msg" id="emailError" role="alert"></span>
     </div>
 
     <div class="form-group">
       <label for="message">Message</label>
-      <textarea id="message" name="message" rows="5" placeholder="Your message..." required></textarea>
-      <span class="error-msg" id="messageError"></span>
+      <textarea id="message" name="message" rows="5" placeholder="Your message…" required></textarea>
+      <span class="error-msg" id="messageError" role="alert"></span>
     </div>
 
-    <button type="submit" class="btn btn-primary form-submit">Send Message</button>
-    <p id="formSuccess" class="form-success"></p>
+    <button type="submit" class="btn btn-primary form-submit">Send Message ✉️</button>
+    <p id="formSuccess" class="form-success" role="status"></p>
   </form>
 </section>
 
@@ -204,7 +240,7 @@
       <h3 class="footer-logo gradient-text">Piyush Singh</h3>
       <p>BCA 2nd Semester Student | Aspiring Developer | Code Enthusiast</p>
       <div class="footer-socials">
-        <a href="mailto:piyushsingh08112005@gmail.com" target="_blank" rel="noopener">✉️ Email</a>
+        <a href="mailto:piyushsingh08112005@gmail.com" rel="noopener">✉️ Email</a>
         <a href="https://github.com/piyushsingh08112005-cmd" target="_blank" rel="noopener">🐙 GitHub</a>
         <a href="https://linkedin.com" target="_blank" rel="noopener">💼 LinkedIn</a>
       </div>
@@ -213,18 +249,18 @@
     <div class="footer-col">
       <h4>How to Add New Code</h4>
       <ol class="footer-instructions">
-        <li>Create a file in <code>codes/&lt;lang&gt;/&lt;level&gt;/</code></li>
-        <li>Copy your code content</li>
-        <li>Add a new object to <code>data/codes.json</code></li>
-        <li>For Python Expert, add a <code>"colab"</code> link field</li>
-        <li>Commit & push to GitHub</li>
+        <li>Open <code>admin.html</code> and log in</li>
+        <li>Fill in title, language, level &amp; code</li>
+        <li>Click <em>Add Code Snippet</em></li>
+        <li>Click <em>🚀 Publish to Live Site</em> (GitHub login required)</li>
+        <li>GitHub Pages re-deploys automatically</li>
       </ol>
     </div>
   </div>
   <p class="footer-bottom">Made with ❤️ by Piyush Singh &copy; <span id="year"></span></p>
 </footer>
 
-<!-- Prism.js Scripts -->
+<!-- Prism.js -->
 <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-core.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/plugins/autoloader/prism-autoloader.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-c.min.js"></script>
@@ -233,15 +269,5 @@
 
 <!-- Custom JS -->
 <script src="script.js"></script>
-
-<select id="lang">
-  <option value="python">Python</option>
-  <option value="cpp">C++</option>
-  <option value="java">Java</option>
-  <option value="javascript">JavaScript</option>
-</select>
-
-<div id="snippets"></div>
-<script>loadSnippets()</script>
 </body>
 </html>
