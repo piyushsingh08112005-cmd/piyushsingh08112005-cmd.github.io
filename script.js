@@ -11,20 +11,26 @@
 //  8. Footer year auto-filled.
 // ============================================================
 
-// ── Judge0 CE public endpoint (no auth needed for basic use) ─────────────────
+// ── Piston API – free, no key, reliable ──────────────────────────────────────
+// Docs: https://github.com/engineer-man/piston
+const PISTON_URL = "https://emkc.org/api/v2/piston/execute";
+
+// Piston language/version map
+const PISTON_LANGS = {
+  C:      { language: "c",      version: "10.2.0" },
+  "C++":  { language: "c++",    version: "10.2.0" },
+  Python: { language: "python", version: "3.10.0" }
+};
+
+// ── Judge0 CE (RapidAPI) – optional fallback if you have a key ───────────────
 const JUDGE0_URL = "https://judge0-ce.p.rapidapi.com";
-// Sign up free at rapidapi.com/judge0-official/api/judge0-ce for a key.
-// Leave blank to use the unauthenticated mirror below instead.
-const RAPIDAPI_KEY = "";  // Paste your RapidAPI key here (get free key at rapidapi.com/judge0-official)
+const RAPIDAPI_KEY = "";  // Optional: paste your free RapidAPI key here
 
-// Fallback: public mirror that needs no key (rate-limited but works for demos)
-const JUDGE0_MIRROR = "https://api.judge0.com";
-
-// Judge0 language IDs
+// Judge0 language IDs (used only if RAPIDAPI_KEY is set)
 const LANG_IDS = {
-  C:      50,   // C (GCC 9.2.0)
-  "C++":  54,   // C++ (GCC 9.2.0)
-  Python: 71    // Python (3.8.1)
+  C:      50,
+  "C++":  54,
+  Python: 71
 };
 
 // ── All code snippets (merged + enriched from data/codes.json) ────────────────
@@ -32,35 +38,56 @@ let allCodes = [];
 
 // ── Projects data ─────────────────────────────────────────────────────────────
 const projects = [
+  // ── HOW TO ADD A PROJECT ──────────────────────────────────────────────────
+  // Copy one block below and fill in your details:
+  //   title   : "Your Project Name"
+  //   desc    : "What the project does"
+  //   lang    : "C" | "C++" | "Python"   ← used by the filter buttons
+  //   tags    : ["tag1", "tag2"]          ← shown as badges on the card
+  //   github  : "https://github.com/yourname/repo"   ← optional
+  //   demo    : "https://your-live-demo.com"          ← optional
+  // ─────────────────────────────────────────────────────────────────────────
   {
     title: "Student Grade Calculator",
     desc: "A C++ console application that calculates student grades, GPA and generates report cards using OOP principles.",
-    tags: ["C++", "OOP", "Console"]
+    lang: "C++",
+    tags: ["OOP", "Console", "GPA"],
+    github: "https://github.com/piyushsingh08112005-cmd"
   },
   {
     title: "Number Guessing Game",
-    desc: "Interactive Python game with difficulty levels, score tracking and colorful terminal output using random module.",
-    tags: ["Python", "Game", "Random"]
+    desc: "Interactive Python game with difficulty levels, score tracking and colorful terminal output using the random module.",
+    lang: "Python",
+    tags: ["Game", "Random", "Terminal"],
+    github: "https://github.com/piyushsingh08112005-cmd"
   },
   {
     title: "Linked List Visualizer",
     desc: "C program that implements singly, doubly and circular linked lists with interactive insert/delete/search operations.",
-    tags: ["C++", "Data Structures", "Algorithms"]
+    lang: "C",
+    tags: ["Data Structures", "Pointers", "Algorithms"],
+    github: "https://github.com/piyushsingh08112005-cmd"
   },
   {
     title: "CSV Data Analyzer",
     desc: "Python script that reads CSV files, performs statistical analysis using Pandas and plots charts with Matplotlib.",
-    tags: ["Python", "Pandas", "Data Analysis"]
+    lang: "Python",
+    tags: ["Pandas", "Data Analysis", "Matplotlib"],
+    github: "https://github.com/piyushsingh08112005-cmd"
   },
   {
     title: "Matrix Operations Library",
     desc: "C++ library for matrix addition, subtraction, multiplication, transpose and determinant using 2D arrays.",
-    tags: ["C++", "Math", "Library"]
+    lang: "C++",
+    tags: ["Math", "Arrays", "Library"],
+    github: "https://github.com/piyushsingh08112005-cmd"
   },
   {
     title: "Password Strength Checker",
     desc: "Python tool that evaluates password strength using regex, suggests improvements and generates secure passwords.",
-    tags: ["Python", "Security", "Regex"]
+    lang: "Python",
+    tags: ["Security", "Regex", "Automation"],
+    github: "https://github.com/piyushsingh08112005-cmd"
   }
 ];
 
@@ -302,7 +329,6 @@ async function runModalCode() {
   const langName = codeEl.className.includes("python") ? "Python"
                  : codeEl.className.includes("cpp")    ? "C++"
                  : "C";
-  const langId   = LANG_IDS[langName];
 
   runBtn.disabled    = true;
   runBtn.textContent = "⏳ Running…";
@@ -310,7 +336,7 @@ async function runModalCode() {
   runOutput.innerHTML = `<div style="padding:16px;color:var(--text-secondary);">⏳ Compiling &amp; executing…</div>`;
 
   try {
-    const result = await judge0Run(code, langId);
+    const result = await runCode(code, langName);
     const stdout = result.stdout || "";
     const stderr = result.stderr || result.compile_output || "";
     const status = result.status?.description || "Unknown";
@@ -332,17 +358,46 @@ async function runModalCode() {
   runBtn.textContent = "▶ Run Code";
 }
 
-// ── Judge0 helper ─────────────────────────────────────────────────────────────
-async function judge0Run(sourceCode, languageId) {
-  const base    = RAPIDAPI_KEY ? JUDGE0_URL : JUDGE0_MIRROR;
-  const headers = { "Content-Type": "application/json" };
-  if (RAPIDAPI_KEY) {
-    headers["X-RapidAPI-Key"]  = RAPIDAPI_KEY;
-    headers["X-RapidAPI-Host"] = "judge0-ce.p.rapidapi.com";
-  }
+// ── Piston runner (primary – free, no key needed) ────────────────────────────
+async function pistonRun(sourceCode, langName) {
+  const lang = PISTON_LANGS[langName];
+  if (!lang) throw new Error("Language not supported: " + langName);
 
-  // Submit
-  const submitRes = await fetch(`${base}/submissions?base64_encoded=false&wait=false`, {
+  const res = await fetch(PISTON_URL, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({
+      language: lang.language,
+      version:  lang.version,
+      files: [{ name: "main", content: sourceCode }]
+    })
+  });
+
+  if (!res.ok) throw new Error("Piston API error: HTTP " + res.status);
+  const data = await res.json();
+
+  // Piston returns { run: { stdout, stderr, code, signal } }
+  const run = data.run || {};
+  const stdout = run.stdout || "";
+  const stderr = run.stderr || "";
+  const exitCode = run.code ?? 0;
+
+  return {
+    stdout,
+    stderr,
+    status: { description: exitCode === 0 ? "Accepted" : "Runtime Error" }
+  };
+}
+
+// ── Judge0 helper (optional fallback if RAPIDAPI_KEY is set) ─────────────────
+async function judge0Run(sourceCode, languageId) {
+  const headers = {
+    "Content-Type": "application/json",
+    "X-RapidAPI-Key":  RAPIDAPI_KEY,
+    "X-RapidAPI-Host": "judge0-ce.p.rapidapi.com"
+  };
+
+  const submitRes = await fetch(`${JUDGE0_URL}/submissions?base64_encoded=false&wait=false`, {
     method: "POST",
     headers,
     body: JSON.stringify({ source_code: sourceCode, language_id: languageId })
@@ -350,16 +405,23 @@ async function judge0Run(sourceCode, languageId) {
   if (!submitRes.ok) throw new Error("Submission failed: HTTP " + submitRes.status);
   const { token } = await submitRes.json();
 
-  // Poll until done
   for (let i = 0; i < 20; i++) {
     await sleep(800);
-    const res = await fetch(`${base}/submissions/${token}?base64_encoded=false`, { headers });
+    const res = await fetch(`${JUDGE0_URL}/submissions/${token}?base64_encoded=false`, { headers });
     if (!res.ok) throw new Error("Polling failed: HTTP " + res.status);
     const data = await res.json();
-    // Status IDs 1 (In Queue) and 2 (Processing) – keep waiting
     if (data.status?.id > 2) return data;
   }
   throw new Error("Execution timed out");
+}
+
+// ── Universal run helper – tries Piston first, Judge0 if key is set ──────────
+async function runCode(sourceCode, langName) {
+  // If user has a RapidAPI key, use Judge0 for potentially more accurate results
+  if (RAPIDAPI_KEY) {
+    return judge0Run(sourceCode, LANG_IDS[langName]);
+  }
+  return pistonRun(sourceCode, langName);
 }
 
 const sleep = ms => new Promise(r => setTimeout(r, ms));
@@ -371,15 +433,19 @@ function renderProjects() {
   const grid = document.getElementById("projectsGrid");
   if (!grid) return;
 
-  const filterBtns = document.querySelectorAll(".filter-btn");
-  filterBtns.forEach(btn => {
-    btn.addEventListener("click", () => {
-      filterBtns.forEach(b => b.classList.remove("active"));
+  // Use event delegation on the filter container to avoid stale/duplicate listeners
+  const filterContainer = document.querySelector(".filter-buttons");
+  if (filterContainer && !filterContainer.dataset.listening) {
+    filterContainer.dataset.listening = "true";
+    filterContainer.addEventListener("click", e => {
+      const btn = e.target.closest(".filter-btn");
+      if (!btn) return;
+      document.querySelectorAll(".filter-btn").forEach(b => b.classList.remove("active"));
       btn.classList.add("active");
       currentFilter = btn.dataset.filter;
       renderProjectCards();
     });
-  });
+  }
 
   renderProjectCards();
 }
@@ -388,16 +454,29 @@ function renderProjectCards() {
   const grid = document.getElementById("projectsGrid");
   if (!grid) return;
 
+  // Filter by lang field (not tags) so the C / C++ / Python buttons work correctly
   const filtered = currentFilter === "All"
     ? projects
-    : projects.filter(p => p.tags.includes(currentFilter));
+    : projects.filter(p => p.lang === currentFilter);
+
+  if (filtered.length === 0) {
+    grid.innerHTML = `<p class="empty-state">No ${currentFilter} projects yet. Add one in script.js!</p>`;
+    return;
+  }
 
   grid.innerHTML = filtered.map(p => `
     <div class="glass-card project-card">
-      <h4>${escHtml(p.title)}</h4>
+      <div class="project-card-header">
+        <h4>${escHtml(p.title)}</h4>
+        <span class="lang-badge">${escHtml(p.lang)}</span>
+      </div>
       <p>${escHtml(p.desc)}</p>
       <div class="project-tags">
         ${p.tags.map(t => `<span>${escHtml(t)}</span>`).join("")}
+      </div>
+      <div class="project-links">
+        ${p.github ? `<a href="${escHtml(p.github)}" target="_blank" rel="noopener" class="project-link-btn">🐙 GitHub</a>` : ""}
+        ${p.demo   ? `<a href="${escHtml(p.demo)}"   target="_blank" rel="noopener" class="project-link-btn">🚀 Live Demo</a>` : ""}
       </div>
     </div>`).join("");
 }
@@ -571,15 +650,14 @@ async function runCompiler() {
 
   if (!output || !btn) return;
 
-  const langId = LANG_IDS[lang];
-  if (!langId) { output.textContent = "⚠️ Language not supported."; return; }
+  if (!PISTON_LANGS[lang]) { output.textContent = "⚠️ Language not supported."; return; }
 
   btn.disabled    = true;
   btn.textContent = "⏳ Running…";
   output.textContent = "⏳ Compiling & executing…";
 
   try {
-    const result = await judge0Run(code, langId);
+    const result = await runCode(code, lang);
     const stdout = result.stdout  || "";
     const stderr = result.stderr  || result.compile_output || "";
     const status = result.status?.description || "Unknown";
