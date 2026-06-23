@@ -42,7 +42,13 @@ let allCodes = [];
 function getRunUrl(lang, colab, onlinegdb) {
   if (colab)     return colab;
   if (onlinegdb) return onlinegdb;
-  if (lang === "Python") return "https://colab.research.google.com/#create=true";
+  if (lang === "Python") {
+  if (!colab || colab.trim() === "") {
+    alert("Will be done soon 🙂");
+    return "#";
+  }
+  return colab;
+  }
   if (lang === "C++")    return "https://www.onlinegdb.com/online_c++_compiler";
   if (lang === "C")      return "https://www.onlinegdb.com/online_c_compiler";
   return null;
